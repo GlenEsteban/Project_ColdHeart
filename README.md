@@ -7,4 +7,4 @@ game. Despite all of that, I decide to continue development
 since I feel this game has potential. This game would also 
 be my first itch.io game that I would publish.
 
-                                                -Snowmau
+-Snowmau
