@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace coldheart_core {
         [SerializeField] GameObject playerCharacterTarget;
         [SerializeField] List<GameObject> playerCharacters;
         [SerializeField] List<GameObject> enemyCharacters;
+        public event Action onSwitchCharacterAction;
         public GameObject GetMainPlayerCharacter () {
             return mainPlayerCharacter;
         }
@@ -26,6 +28,9 @@ namespace coldheart_core {
         public bool GetIsAPlayerCharacter(GameObject character) {
             return playerCharacters.Contains(character);
         }
+        public bool GetIsAnEnemyCharacter(GameObject character) {
+            return enemyCharacters.Contains(character);
+        }
         void Start()
         {
             SetCurrentPlayerCharacter();
@@ -33,21 +38,18 @@ namespace coldheart_core {
         }
         void SetCurrentPlayerCharacter()
         {
-            if (mainPlayerCharacter != null)
-            {
+            if (mainPlayerCharacter != null) {
                 currentPlayerCharacter = mainPlayerCharacter;
                 playerCharacters.Add(mainPlayerCharacter);
+                mainPlayerCharacter.tag = "Player";
             }
-            else
-            {
-                print("Main Character is not set in Character Manager!");
+            else {
+                print("Main Player Character is not set in Character Manager!");
             }
-        }
-        public bool GetIsAnEnemyCharacter(GameObject character) {
-            return enemyCharacters.Contains(character);
         }
         public void RegisterPlayerCharacter(GameObject playerCharacter, bool isControlledByPlayer) {
             playerCharacters.Add(playerCharacter);
+            playerCharacter.tag = "Player";
 
             if (isControlledByPlayer) {
                 currentPlayerCharacter = playerCharacter;
@@ -57,9 +59,9 @@ namespace coldheart_core {
             bool isAPlayerCharacter = playerCharacters.Contains(playerCharacter);
             if (isAPlayerCharacter) {
                 playerCharacters.Remove(playerCharacter);
+                playerCharacter.tag = "Untagged";
 
-                if (playerCharacter == currentPlayerCharacter)
-                {
+                if (playerCharacter == currentPlayerCharacter) {
                     currentPlayerCharacter = mainPlayerCharacter;
                 }
             }
@@ -73,16 +75,18 @@ namespace coldheart_core {
             else {
                 nextPlayerCharacterIndex = currentPlayerCharacterIndex + 1;
             }
-
             currentPlayerCharacter = playerCharacters[nextPlayerCharacterIndex];
+            onSwitchCharacterAction();
         }
         public void RegisterEnemyCharacter(GameObject enemyCharacter) {
             playerCharacters.Add(enemyCharacter);
+            enemyCharacter.tag = "Enemy";
         }
         public void UnregisterEnemyCharacter(GameObject enemyCharacter) {
             bool isAnEnemyCharacter = playerCharacters.Contains(enemyCharacter);
             if (isAnEnemyCharacter) {
                 playerCharacters.Remove(enemyCharacter);
+                enemyCharacter.tag = "Untagged";
             }
         }
     }

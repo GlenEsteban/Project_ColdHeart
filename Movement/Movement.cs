@@ -8,21 +8,32 @@ namespace coldheart_movement {
     [RequireComponent(typeof(NavMeshAgent))]
     public class Movement : MonoBehaviour {
         [SerializeField] float moveSpeed = 10f;
+        bool isAbleToMove = true;
         Rigidbody rb;
         NavMeshAgent navMeshAgent;
         Vector3 playerVelocity;
         Ray screenPointRay;
         RaycastHit hit;
         GameObject objectHit;
+        public bool GetIsAbleToMove() {
+            return isAbleToMove;
+        }
+        public void SetIsAbleToMove(bool state) {
+            isAbleToMove = state;
+        }
         void Start() {
             rb = GetComponent<Rigidbody>();
             navMeshAgent = GetComponent<NavMeshAgent>();
         }
         public void MoveCharacter(Vector2 moveInput) {
+            if (!isAbleToMove) {return;}
+
             playerVelocity = new Vector3(moveInput.x, 0f, moveInput.y);
             rb.velocity = playerVelocity * moveSpeed;
         }
         public void LookAtCursor() {
+            if (!isAbleToMove) {return;}
+
             screenPointRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             bool hasHit = Physics.Raycast(screenPointRay, out hit);
 
@@ -34,6 +45,8 @@ namespace coldheart_movement {
             }
         }
         public void FollowTarget(GameObject target) {
+            if (!isAbleToMove) {return;}
+
             if (navMeshAgent != null) {
                 navMeshAgent.destination = target.transform.position;
             }

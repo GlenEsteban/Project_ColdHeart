@@ -13,13 +13,13 @@ namespace coldheart_controls {
     public class CharacterController : MonoBehaviour
     {
         public bool isAPlayerCharacter;
-        bool isControlledByPlayer;
+        public bool isControlledByPlayer;
+        bool isControlStateUpdated;
         PlayerInput playerInput;
         CharacterManager characterManager;
         Movement movement;
         Vector2 moveInput;
         Combat combat;
-        bool isGuarding;
         public bool GetIsPlayerCharacter() {
             return isAPlayerCharacter;
         }
@@ -33,23 +33,18 @@ namespace coldheart_controls {
             combat = GetComponent<Combat>();
 
             RegisterCharacter();
+            characterManager.onSwitchCharacterAction += UpdateControlStatus;
         }
         void Update()
         {
-            UpdateCharacterControllerState();
-
-            if (!isAPlayerCharacter || !isControlledByPlayer)
-            {
-                playerInput.enabled = false;
-                return;
-            }
-            else
-            {
-                playerInput.enabled = true;
+            if (!isControlStateUpdated) {
+                UpdateControlStatus();
             }
             
-            movement.MoveCharacter(moveInput);
-            movement.LookAtCursor();
+            if (isControlledByPlayer) {
+                movement.MoveCharacter(moveInput);
+                movement.LookAtCursor();
+            }
         }
         void RegisterCharacter() {
             // Main Character is registered on the Character Manager for scene setup reasons
@@ -62,31 +57,26 @@ namespace coldheart_controls {
                 characterManager.RegisterEnemyCharacter(gameObject);
             }
         }
-        void UpdateCharacterControllerState()
-        {
-            if (characterManager.GetIsAPlayerCharacter(gameObject)) {
-                isAPlayerCharacter = true;
-
-                if (characterManager.GetCurrentPlayerCharacter() == gameObject) {
-                    isControlledByPlayer = true;
-                }
-                else {
-                    isControlledByPlayer = false;
-                }
+        void UpdateControlStatus() {
+            isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
+            if (isControlledByPlayer) {
+                playerInput.enabled = true;
             }
             else {
-                isAPlayerCharacter = false;
+                playerInput.enabled = false;
+            }
+            if (characterManager.GetCurrentPlayerCharacter() != null) {
+                isControlStateUpdated = true;
             }
         }
         void OnMove(InputValue value) {
             moveInput = value.Get<Vector2>();
         }
-        void OnGuard() {
-            isGuarding = !isGuarding;
-            combat.SetIsGuarding(isGuarding);
-        }
         void OnSwitch() {
             characterManager.SwitchCurrentPlayerCharacter();
+        }
+        void OnGuard() {
+            movement.SetIsAbleToMove(!movement.GetIsAbleToMove());
         }
     }
 }
