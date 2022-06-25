@@ -32,7 +32,7 @@ namespace coldheart_controls {
                 followTarget = characterManager.GetPlayerCharacterTarget();
                 movement.FollowTarget(followTarget);
             }
-            else if (characterManager.GetIsAnEnemyCharacter(gameObject)) {
+            else if (tag == "Enemy") {
                 RunEnemyGuardBehavior();
             }
         }

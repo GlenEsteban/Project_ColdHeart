@@ -25,19 +25,12 @@ namespace coldheart_core {
         public void SetPlayerCharacterTarget(GameObject target) {
             playerCharacterTarget = target;
         }
-        public bool GetIsAPlayerCharacter(GameObject character) {
-            return playerCharacters.Contains(character);
-        }
-        public bool GetIsAnEnemyCharacter(GameObject character) {
-            return enemyCharacters.Contains(character);
-        }
         void Start()
         {
             SetCurrentPlayerCharacter();
             SetPlayerCharacterTarget(currentPlayerCharacter);
         }
-        void SetCurrentPlayerCharacter()
-        {
+        void SetCurrentPlayerCharacter() {
             if (mainPlayerCharacter != null) {
                 currentPlayerCharacter = mainPlayerCharacter;
                 playerCharacters.Add(mainPlayerCharacter);
@@ -66,6 +59,17 @@ namespace coldheart_core {
                 }
             }
         }
+        public void RegisterEnemyCharacter(GameObject enemyCharacter) {
+            playerCharacters.Add(enemyCharacter);
+            enemyCharacter.tag = "Enemy";
+        }
+        public void UnregisterEnemyCharacter(GameObject enemyCharacter) {
+            bool isAnEnemyCharacter = playerCharacters.Contains(enemyCharacter);
+            if (isAnEnemyCharacter) {
+                playerCharacters.Remove(enemyCharacter);
+                enemyCharacter.tag = "Untagged";
+            }
+        }
         public void SwitchCurrentPlayerCharacter() {
             int currentPlayerCharacterIndex = playerCharacters.IndexOf(currentPlayerCharacter);
             int nextPlayerCharacterIndex;
@@ -77,17 +81,6 @@ namespace coldheart_core {
             }
             currentPlayerCharacter = playerCharacters[nextPlayerCharacterIndex];
             onSwitchCharacterAction();
-        }
-        public void RegisterEnemyCharacter(GameObject enemyCharacter) {
-            playerCharacters.Add(enemyCharacter);
-            enemyCharacter.tag = "Enemy";
-        }
-        public void UnregisterEnemyCharacter(GameObject enemyCharacter) {
-            bool isAnEnemyCharacter = playerCharacters.Contains(enemyCharacter);
-            if (isAnEnemyCharacter) {
-                playerCharacters.Remove(enemyCharacter);
-                enemyCharacter.tag = "Untagged";
-            }
         }
     }
 }

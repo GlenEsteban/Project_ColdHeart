@@ -26,17 +26,17 @@ namespace coldheart_controls {
         public bool GetIsControlledByPlayer() {
             return isControlledByPlayer;
         }
-        void Start() {
+        void Awake() {
             playerInput = GetComponent<PlayerInput>();
             characterManager = FindObjectOfType<CharacterManager>();
             movement = GetComponent<Movement>();
             combat = GetComponent<Combat>();
-
+        }
+        void OnEnable() {
             RegisterCharacter();
             characterManager.onSwitchCharacterAction += UpdateControlStatus;
         }
-        void Update()
-        {
+        void Update() {
             if (!isControlStateUpdated) {
                 UpdateControlStatus();
             }
@@ -65,6 +65,8 @@ namespace coldheart_controls {
             else {
                 playerInput.enabled = false;
             }
+            // For some reason GetCurrentPlayerCharacter() returns null at Start and on the first 
+            // ... Update(), so here's a quick fix. 
             if (characterManager.GetCurrentPlayerCharacter() != null) {
                 isControlStateUpdated = true;
             }
