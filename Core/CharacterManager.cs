@@ -9,7 +9,6 @@ namespace coldheart_core {
     {
         [SerializeField] GameObject mainPlayerCharacter;
         [SerializeField] GameObject currentPlayerCharacter;
-        [SerializeField] GameObject playerCharacterTarget;
         [SerializeField] List<GameObject> playerCharacters;
         [SerializeField] List<GameObject> enemyCharacters;
         public event Action onSwitchCharacterAction;
@@ -19,16 +18,8 @@ namespace coldheart_core {
         public GameObject GetCurrentPlayerCharacter () {
             return currentPlayerCharacter;
         }
-        public GameObject GetPlayerCharacterTarget() {
-            return playerCharacterTarget;
-        }
-        public void SetPlayerCharacterTarget(GameObject target) {
-            playerCharacterTarget = target;
-        }
-        void Start()
-        {
+        void Start() {
             SetCurrentPlayerCharacter();
-            SetPlayerCharacterTarget(currentPlayerCharacter);
         }
         void SetCurrentPlayerCharacter() {
             if (mainPlayerCharacter != null) {

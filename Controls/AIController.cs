@@ -10,46 +10,61 @@ using System;
 namespace coldheart_controls {
     public class AIController : MonoBehaviour
     {
-        bool isAPlayerCharacter;
-        bool isControlledByPlayer;
+        public bool isControlledByPlayer;
+        bool isAIControlStateUpdated;
         CharacterManager characterManager;
-        CharacterController characterController;
         Movement movement;
         NavMeshAgent navMeshAgent;
-        GameObject followTarget;
-
-        void Start() {
+        public Transform followTarget;
+        public void SetFollowTarget(Transform targetTransform) {
+            followTarget = targetTransform;
+        }
+        void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
-            characterController = GetComponent<CharacterController>();
             movement = GetComponent<Movement>();
             navMeshAgent = GetComponent<NavMeshAgent>();
         }
+        void OnEnable() {
+            characterManager.onSwitchCharacterAction += UpdateAIControlStatus;
+        }
+        void OnDisable() {
+            characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
+        }
         void Update() {
-            UpdateAIControllerState();
+            if (!isAIControlStateUpdated) {
+                UpdateAIControlStatus();
+                return;
+            }
 
-            if (isAPlayerCharacter) {
+            if (tag == "Player") {
                 if (isControlledByPlayer) {return;}
-                followTarget = characterManager.GetPlayerCharacterTarget();
+
+                if (followTarget == null) {
+                    SetFollowTarget(characterManager.GetCurrentPlayerCharacter().transform);
+                }            
                 movement.FollowTarget(followTarget);
             }
             else if (tag == "Enemy") {
-                RunEnemyGuardBehavior();
+                if (followTarget == null) {
+                    SetFollowTarget(transform);
+                }
+                movement.FollowTarget(followTarget);
             }
         }
-        void UpdateAIControllerState()
-        {
-            isAPlayerCharacter = characterController.GetIsPlayerCharacter();
-            isControlledByPlayer = characterController.GetIsControlledByPlayer();
+        void UpdateAIControlStatus() {
+            isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
             if (isControlledByPlayer) {
                 navMeshAgent.enabled = false;
             }
             else {
                 navMeshAgent.enabled = true;
             }
-        }
-        void RunEnemyGuardBehavior()
-        {
-            
+
+            // For some reason GetCurrentPlayerCharacter() returns null at Start and on the 
+            // ... first Update(), so here's a quick fix. 
+            if (characterManager.GetCurrentPlayerCharacter() != null) {
+                isAIControlStateUpdated = true;
+            }
         }
     }
 }

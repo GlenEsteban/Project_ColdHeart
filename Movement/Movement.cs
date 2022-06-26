@@ -44,11 +44,11 @@ namespace coldheart_movement {
                 }
             }
         }
-        public void FollowTarget(GameObject target) {
+        public void FollowTarget(Transform target) {
             if (!isAbleToMove) {return;}
 
             if (navMeshAgent != null) {
-                navMeshAgent.destination = target.transform.position;
+                navMeshAgent.destination = target.position;
             }
         }
     }

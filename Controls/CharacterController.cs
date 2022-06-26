@@ -15,8 +15,8 @@ namespace coldheart_controls {
         public bool isAPlayerCharacter;
         public bool isControlledByPlayer;
         bool isControlStateUpdated;
-        PlayerInput playerInput;
         CharacterManager characterManager;
+        PlayerInput playerInput;
         Movement movement;
         Vector2 moveInput;
         Combat combat;
@@ -27,14 +27,24 @@ namespace coldheart_controls {
             return isControlledByPlayer;
         }
         void Awake() {
-            playerInput = GetComponent<PlayerInput>();
             characterManager = FindObjectOfType<CharacterManager>();
+            playerInput = GetComponent<PlayerInput>();
             movement = GetComponent<Movement>();
             combat = GetComponent<Combat>();
         }
         void OnEnable() {
             RegisterCharacter();
             characterManager.onSwitchCharacterAction += UpdateControlStatus;
+        }
+        void OnDisable() {
+            if (isAPlayerCharacter) {
+                characterManager.UnregisterPlayerCharacter(gameObject);
+            }
+            else {
+                characterManager.UnregisterEnemyCharacter(gameObject);
+            }
+
+            characterManager.onSwitchCharacterAction -= UpdateControlStatus;
         }
         void Update() {
             if (!isControlStateUpdated) {
@@ -58,6 +68,17 @@ namespace coldheart_controls {
             }
         }
         void UpdateControlStatus() {
+            if (tag == "Player") {
+                isAPlayerCharacter = true;
+            }
+            else if (tag == "Enemy") {
+                isAPlayerCharacter = false;
+            }
+            else {
+                isAPlayerCharacter = false;
+                print("Character is untagged!!!");
+            }
+
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
             if (isControlledByPlayer) {
                 playerInput.enabled = true;
@@ -65,8 +86,9 @@ namespace coldheart_controls {
             else {
                 playerInput.enabled = false;
             }
-            // For some reason GetCurrentPlayerCharacter() returns null at Start and on the first 
-            // ... Update(), so here's a quick fix. 
+            
+            // For some reason GetCurrentPlayerCharacter() returns null at Start and on the 
+            // ... first Update(), so here's a quick fix. 
             if (characterManager.GetCurrentPlayerCharacter() != null) {
                 isControlStateUpdated = true;
             }
@@ -77,8 +99,8 @@ namespace coldheart_controls {
         void OnSwitch() {
             characterManager.SwitchCurrentPlayerCharacter();
         }
-        void OnGuard() {
-            movement.SetIsAbleToMove(!movement.GetIsAbleToMove());
+        void OnFollow() {
+            print("Follow target switched");
         }
     }
 }
