@@ -5,13 +5,13 @@ using UnityEngine;
 using UnityEngine.Events;
 
 namespace coldheart_core {
-    public class CharacterManager : MonoBehaviour
-    {
+    public class CharacterManager : MonoBehaviour {
         [SerializeField] GameObject mainPlayerCharacter;
         [SerializeField] GameObject currentPlayerCharacter;
         [SerializeField] List<GameObject> playerCharacters;
         [SerializeField] List<GameObject> enemyCharacters;
         public event Action onSwitchCharacterAction;
+        public event Action onAllPlayerCharactersFollowCurrentPlayer;
         public GameObject GetMainPlayerCharacter () {
             return mainPlayerCharacter;
         }
@@ -72,6 +72,9 @@ namespace coldheart_core {
             }
             currentPlayerCharacter = playerCharacters[nextPlayerCharacterIndex];
             onSwitchCharacterAction();
+        }
+        public void AllPlayerCharactersFollowCurrentPlayer() {
+            onAllPlayerCharactersFollowCurrentPlayer();
         }
     }
 }

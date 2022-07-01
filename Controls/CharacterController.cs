@@ -15,6 +15,7 @@ namespace coldheart_controls {
         public bool isAPlayerCharacter;
         public bool isControlledByPlayer;
         bool isControlStateUpdated;
+        bool isAbleToSwitchFollowTarget;
         CharacterManager characterManager;
         PlayerInput playerInput;
         Movement movement;
@@ -96,11 +97,20 @@ namespace coldheart_controls {
         void OnMove(InputValue value) {
             moveInput = value.Get<Vector2>();
         }
-        void OnSwitch() {
+        void OnSwitchCharacter() {
             characterManager.SwitchCurrentPlayerCharacter();
         }
-        void OnFollow() {
-            print("Follow target switched");
+        void OnSwitchFollowTarget() {
+            if (isAbleToSwitchFollowTarget) {
+                GetComponent<AIController>().SwitchTargetState();
+            }
+            else{
+                isAbleToSwitchFollowTarget = true;
+            }
+        }
+        void OnFollowMe(InputValue value) {
+            characterManager.AllPlayerCharactersFollowCurrentPlayer();
+            isAbleToSwitchFollowTarget = false;
         }
     }
 }

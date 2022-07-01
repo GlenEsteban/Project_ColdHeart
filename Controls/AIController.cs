@@ -8,6 +8,11 @@ using System;
 
 
 namespace coldheart_controls {
+    public enum TargetState {
+        MainCharacter,
+        CurrentCharacter,
+        Self
+    }
     public class AIController : MonoBehaviour
     {
         public bool isControlledByPlayer;
@@ -15,9 +20,10 @@ namespace coldheart_controls {
         CharacterManager characterManager;
         Movement movement;
         NavMeshAgent navMeshAgent;
-        public Transform followTarget;
-        public void SetFollowTarget(Transform targetTransform) {
-            followTarget = targetTransform;
+        TargetState targetState;
+        Transform followTarget;
+        public void SetTargetState(TargetState targetState) {
+            this.targetState = targetState;
         }
         void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
@@ -25,29 +31,27 @@ namespace coldheart_controls {
             navMeshAgent = GetComponent<NavMeshAgent>();
         }
         void OnEnable() {
+            SetTargetState(TargetState.MainCharacter);
             characterManager.onSwitchCharacterAction += UpdateAIControlStatus;
+            characterManager.onSwitchCharacterAction += UpdateFollowTarget;
+            characterManager.onAllPlayerCharactersFollowCurrentPlayer += FollowCurrentCharacter;
         }
         void OnDisable() {
             characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
         }
         void Update() {
+            // Although having an AI control status creates a state, the state is very
+            // simple and only needs it once rather than having it checked every frame.
             if (!isAIControlStateUpdated) {
                 UpdateAIControlStatus();
-                return;
+                UpdateFollowTarget();
             }
 
             if (tag == "Player") {
                 if (isControlledByPlayer) {return;}
-
-                if (followTarget == null) {
-                    SetFollowTarget(characterManager.GetCurrentPlayerCharacter().transform);
-                }            
                 movement.FollowTarget(followTarget);
             }
             else if (tag == "Enemy") {
-                if (followTarget == null) {
-                    SetFollowTarget(transform);
-                }
                 movement.FollowTarget(followTarget);
             }
         }
@@ -64,6 +68,38 @@ namespace coldheart_controls {
             // ... first Update(), so here's a quick fix. 
             if (characterManager.GetCurrentPlayerCharacter() != null) {
                 isAIControlStateUpdated = true;
+            }
+        }
+        void UpdateFollowTarget() {
+            if (targetState == TargetState.MainCharacter) {
+                GameObject mainCharacter = characterManager.GetMainPlayerCharacter();
+                followTarget = mainCharacter.transform;
+            }
+            else if (targetState == TargetState.CurrentCharacter) {
+                GameObject currentCharacter = characterManager.GetCurrentPlayerCharacter();
+                followTarget = currentCharacter.transform;
+            }
+            else if (targetState == TargetState.Self) {
+                GameObject self = gameObject;
+                followTarget = self.transform;
+            }
+        }
+        void FollowCurrentCharacter() {
+            targetState = TargetState.CurrentCharacter;
+            isAIControlStateUpdated = false;
+        }
+        public void SwitchTargetState() {
+            if (targetState == TargetState.Self) {
+                SetTargetState(TargetState.MainCharacter);
+                print(gameObject.name + " is following main character!");
+            }
+            else if (targetState == TargetState.MainCharacter) {
+                SetTargetState(TargetState.CurrentCharacter);
+                print(gameObject.name + " is following current character!");
+            }
+            else if (targetState == TargetState.CurrentCharacter) {
+                SetTargetState(TargetState.Self);
+                print(gameObject.name + " is following its guard location");
             }
         }
     }
