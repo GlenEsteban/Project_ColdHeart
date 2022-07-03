@@ -15,9 +15,11 @@ namespace coldheart_controls {
         public bool isAPlayerCharacter;
         public bool isControlledByPlayer;
         bool isControlStateUpdated;
-        bool isAbleToSwitchFollowTarget;
+        bool isAbleToSwitchFollowTarget = true;
+        public float mouseScrollY;
         CharacterManager characterManager;
         PlayerInput playerInput;
+        PlayerControls playerControls;
         Movement movement;
         Vector2 moveInput;
         Combat combat;
@@ -32,10 +34,16 @@ namespace coldheart_controls {
             playerInput = GetComponent<PlayerInput>();
             movement = GetComponent<Movement>();
             combat = GetComponent<Combat>();
+
+            playerControls = new PlayerControls();
+            playerControls.Player.SwitchCharacter.performed += x => mouseScrollY = x.ReadValue<float>();
         }
         void OnEnable() {
             RegisterCharacter();
+            
             characterManager.onSwitchCharacterAction += UpdateControlStatus;
+
+            playerControls.Enable();
         }
         void OnDisable() {
             if (isAPlayerCharacter) {
@@ -46,6 +54,8 @@ namespace coldheart_controls {
             }
 
             characterManager.onSwitchCharacterAction -= UpdateControlStatus;
+
+            playerControls.Disable();
         }
         void Update() {
             if (!isControlStateUpdated) {
@@ -98,7 +108,12 @@ namespace coldheart_controls {
             moveInput = value.Get<Vector2>();
         }
         void OnSwitchCharacter() {
-            characterManager.SwitchCurrentPlayerCharacter();
+            if (mouseScrollY > 0) {
+                characterManager.SwitchToNextCharacter();
+            }
+            else if (mouseScrollY < 0) {
+                characterManager.SwitchToPreviousCharacter();
+            }
         }
         void OnSwitchFollowTarget() {
             if (isAbleToSwitchFollowTarget) {

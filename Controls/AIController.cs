@@ -102,5 +102,11 @@ namespace coldheart_controls {
                 print(gameObject.name + " is following its guard location");
             }
         }
+        // Visualize follow target connections
+        void OnDrawGizmos() {
+            if (followTarget == null) return;
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(transform.position, followTarget.position);
+        }
     }
 }

@@ -61,7 +61,7 @@ namespace coldheart_core {
                 enemyCharacter.tag = "Untagged";
             }
         }
-        public void SwitchCurrentPlayerCharacter() {
+        public void SwitchToNextCharacter() {
             int currentPlayerCharacterIndex = playerCharacters.IndexOf(currentPlayerCharacter);
             int nextPlayerCharacterIndex;
             if (currentPlayerCharacterIndex == playerCharacters.Count - 1) {
@@ -71,6 +71,18 @@ namespace coldheart_core {
                 nextPlayerCharacterIndex = currentPlayerCharacterIndex + 1;
             }
             currentPlayerCharacter = playerCharacters[nextPlayerCharacterIndex];
+            onSwitchCharacterAction();
+        }
+        public void SwitchToPreviousCharacter() {
+            int currentPlayerCharacterIndex = playerCharacters.IndexOf(currentPlayerCharacter);
+            int previousPlayerCharacterIndex;
+            if (currentPlayerCharacterIndex == 0) {
+                previousPlayerCharacterIndex = playerCharacters.Count - 1;
+            }
+            else {
+                previousPlayerCharacterIndex = currentPlayerCharacterIndex - 1;
+            }
+            currentPlayerCharacter = playerCharacters[previousPlayerCharacterIndex];
             onSwitchCharacterAction();
         }
         public void AllPlayerCharactersFollowCurrentPlayer() {
