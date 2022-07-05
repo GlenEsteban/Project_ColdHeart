@@ -6,16 +6,14 @@ using coldheart_core;
 using coldheart_movement;
 using System;
 
-
 namespace coldheart_controls {
     public enum TargetState {
         MainCharacter,
         CurrentCharacter,
         Self
     }
-    public class AIController : MonoBehaviour
-    {
-        public bool isControlledByPlayer;
+    public class FollowerAIController : MonoBehaviour {
+        bool isControlledByPlayer;
         bool isAIControlStateUpdated;
         CharacterManager characterManager;
         Movement movement;
@@ -32,12 +30,15 @@ namespace coldheart_controls {
         }
         void OnEnable() {
             SetTargetState(TargetState.MainCharacter);
+            
             characterManager.onSwitchCharacterAction += UpdateAIControlStatus;
             characterManager.onSwitchCharacterAction += UpdateFollowTarget;
             characterManager.onAllPlayerCharactersFollowCurrentPlayer += FollowCurrentCharacter;
         }
         void OnDisable() {
-            characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
+            if (characterManager.CheckIfCharacterIsAPlayerCharacter(gameObject)) {
+                characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
+            }
         }
         void Update() {
             // Although having an AI control status creates a state, the state is very
@@ -47,13 +48,9 @@ namespace coldheart_controls {
                 UpdateFollowTarget();
             }
 
-            if (tag == "Player") {
-                if (isControlledByPlayer) {return;}
-                movement.FollowTarget(followTarget);
-            }
-            else if (tag == "Enemy") {
-                movement.FollowTarget(followTarget);
-            }
+            if (isControlledByPlayer) {return;}
+
+            movement.FollowTarget(followTarget);
         }
         void UpdateAIControlStatus() {
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
@@ -86,7 +83,7 @@ namespace coldheart_controls {
         }
         void FollowCurrentCharacter() {
             targetState = TargetState.CurrentCharacter;
-            isAIControlStateUpdated = false;
+            UpdateFollowTarget();
         }
         public void SwitchTargetState() {
             if (targetState == TargetState.Self) {

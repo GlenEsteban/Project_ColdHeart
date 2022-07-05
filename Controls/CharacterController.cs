@@ -10,46 +10,39 @@ namespace coldheart_controls {
     [RequireComponent(typeof(PlayerInput))]
     [RequireComponent(typeof(Movement))]
     [RequireComponent(typeof(Combat))]
+    [RequireComponent(typeof(FollowerAIController))]
+    [RequireComponent(typeof(EnemyAIController))]
     public class CharacterController : MonoBehaviour
     {
-        public bool isAPlayerCharacter;
-        public bool isControlledByPlayer;
+        bool isControlledByPlayer;
         bool isControlStateUpdated;
         bool isAbleToSwitchFollowTarget = true;
-        public float mouseScrollY;
+        [HideInInspector] public float mouseScrollY;
         CharacterManager characterManager;
         PlayerInput playerInput;
         PlayerControls playerControls;
         Movement movement;
         Vector2 moveInput;
         Combat combat;
-        public bool GetIsPlayerCharacter() {
-            return isAPlayerCharacter;
-        }
-        public bool GetIsControlledByPlayer() {
-            return isControlledByPlayer;
-        }
         void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
             playerInput = GetComponent<PlayerInput>();
             movement = GetComponent<Movement>();
             combat = GetComponent<Combat>();
-
-            playerControls = new PlayerControls();
-            playerControls.Player.SwitchCharacter.performed += x => mouseScrollY = x.ReadValue<float>();
         }
         void OnEnable() {
             RegisterCharacter();
-            
-            characterManager.onSwitchCharacterAction += UpdateControlStatus;
 
+            characterManager.onSwitchCharacterAction += UpdateControlStatus;
+            playerControls = new PlayerControls();
+            playerControls.Player.SwitchCharacter.performed += x => mouseScrollY = x.ReadValue<float>();
             playerControls.Enable();
         }
         void OnDisable() {
-            if (isAPlayerCharacter) {
+            if (tag == "Player") {
                 characterManager.UnregisterPlayerCharacter(gameObject);
             }
-            else {
+            else if (tag == "Enemy") {
                 characterManager.UnregisterEnemyCharacter(gameObject);
             }
 
@@ -71,23 +64,31 @@ namespace coldheart_controls {
             // Main Character is registered on the Character Manager for scene setup reasons
             if (characterManager.GetMainPlayerCharacter() == gameObject) {return;}
 
-            if (isAPlayerCharacter) {
+            if (tag == "Player") {
                 characterManager.RegisterPlayerCharacter(gameObject, isControlledByPlayer);
             }
-            else {
+            else if (tag == "Enemy") {
                 characterManager.RegisterEnemyCharacter(gameObject);
+            }
+            else {
+                print("Character is untagged!!!");
             }
         }
         void UpdateControlStatus() {
             if (tag == "Player") {
-                isAPlayerCharacter = true;
+                GetComponent<CharacterController>().enabled = true;
+                GetComponent<FollowerAIController>().enabled = true;
+                GetComponent<EnemyAIController>().enabled = false;
             }
             else if (tag == "Enemy") {
-                isAPlayerCharacter = false;
+                GetComponent<CharacterController>().enabled = false;
+                GetComponent<FollowerAIController>().enabled = false;
+                GetComponent<EnemyAIController>().enabled = true;
             }
             else {
-                isAPlayerCharacter = false;
-                print("Character is untagged!!!");
+                GetComponent<CharacterController>().enabled = false;
+                GetComponent<FollowerAIController>().enabled = false;
+                GetComponent<EnemyAIController>().enabled = false;
             }
 
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
@@ -117,7 +118,7 @@ namespace coldheart_controls {
         }
         void OnSwitchFollowTarget() {
             if (isAbleToSwitchFollowTarget) {
-                GetComponent<AIController>().SwitchTargetState();
+                GetComponent<FollowerAIController>().SwitchTargetState();
             }
             else{
                 isAbleToSwitchFollowTarget = true;

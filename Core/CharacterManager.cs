@@ -18,6 +18,9 @@ namespace coldheart_core {
         public GameObject GetCurrentPlayerCharacter () {
             return currentPlayerCharacter;
         }
+        public Boolean CheckIfCharacterIsAPlayerCharacter(GameObject character) {
+            return playerCharacters.Contains(character);
+        }
         void Start() {
             SetCurrentPlayerCharacter();
         }
