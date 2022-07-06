@@ -19,14 +19,19 @@ namespace coldheart_controls {
         bool isAbleToSwitchFollowTarget = true;
         [HideInInspector] public float mouseScrollY;
         CharacterManager characterManager;
+        GameObject mainPlayerCharacter;
         PlayerInput playerInput;
         PlayerControls playerControls;
+        FollowerAIController followerAIController;
+        EnemyAIController enemyAIController;
         Movement movement;
         Vector2 moveInput;
         Combat combat;
         void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
             playerInput = GetComponent<PlayerInput>();
+            followerAIController = GetComponent<FollowerAIController>();
+            enemyAIController =GetComponent<EnemyAIController>();
             movement = GetComponent<Movement>();
             combat = GetComponent<Combat>();
         }
@@ -75,20 +80,21 @@ namespace coldheart_controls {
             }
         }
         void UpdateControlStatus() {
+            mainPlayerCharacter = characterManager.GetMainPlayerCharacter();
             if (tag == "Player") {
                 GetComponent<CharacterController>().enabled = true;
-                GetComponent<FollowerAIController>().enabled = true;
-                GetComponent<EnemyAIController>().enabled = false;
+                enemyAIController.enabled = false;
+                followerAIController.enabled = true;
             }
             else if (tag == "Enemy") {
                 GetComponent<CharacterController>().enabled = false;
-                GetComponent<FollowerAIController>().enabled = false;
-                GetComponent<EnemyAIController>().enabled = true;
+                followerAIController.enabled = false;
+                enemyAIController.enabled = true;
             }
             else {
                 GetComponent<CharacterController>().enabled = false;
-                GetComponent<FollowerAIController>().enabled = false;
-                GetComponent<EnemyAIController>().enabled = false;
+                followerAIController.enabled = false;
+                enemyAIController.enabled = false;
             }
 
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
@@ -118,15 +124,16 @@ namespace coldheart_controls {
         }
         void OnSwitchFollowTarget() {
             if (isAbleToSwitchFollowTarget) {
-                GetComponent<FollowerAIController>().SwitchTargetState();
+                followerAIController.SwitchTargetState();
             }
             else{
                 isAbleToSwitchFollowTarget = true;
             }
         }
         void OnFollowMe(InputValue value) {
-            characterManager.AllPlayerCharactersFollowCurrentPlayer();
+            characterManager.AllPlayerCharactersFollowTargetPlayer();
             isAbleToSwitchFollowTarget = false;
+            print ("Everyone is following " + gameObject.name);
         }
     }
 }

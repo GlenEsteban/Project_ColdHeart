@@ -10,7 +10,8 @@ namespace coldheart_controls {
     public enum TargetState {
         MainCharacter,
         CurrentCharacter,
-        Self
+        AssignedTargetCharacter,
+        ThisCharacter
     }
     public class FollowerAIController : MonoBehaviour {
         bool isControlledByPlayer;
@@ -18,8 +19,9 @@ namespace coldheart_controls {
         CharacterManager characterManager;
         Movement movement;
         NavMeshAgent navMeshAgent;
-        TargetState targetState;
-        Transform followTarget;
+        public TargetState targetState;
+        public Transform followTarget;
+        public Transform assignedTargetCharacter;
         public void SetTargetState(TargetState targetState) {
             this.targetState = targetState;
         }
@@ -32,12 +34,13 @@ namespace coldheart_controls {
             SetTargetState(TargetState.MainCharacter);
             
             characterManager.onSwitchCharacterAction += UpdateAIControlStatus;
-            characterManager.onSwitchCharacterAction += UpdateFollowTarget;
-            characterManager.onAllPlayerCharactersFollowCurrentPlayer += FollowCurrentCharacter;
+            characterManager.onSwitchCharacterAction += UpdateTargetState;
+            characterManager.onAllPlayerCharactersFollowTargetPlayer += FollowAssignedTargetCharacter;
         }
         void OnDisable() {
             if (characterManager.CheckIfCharacterIsAPlayerCharacter(gameObject)) {
                 characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
+                characterManager.onAllPlayerCharactersFollowTargetPlayer -= FollowCurrentCharacter;
             }
         }
         void Update() {
@@ -45,12 +48,19 @@ namespace coldheart_controls {
             // simple and only needs it once rather than having it checked every frame.
             if (!isAIControlStateUpdated) {
                 UpdateAIControlStatus();
-                UpdateFollowTarget();
+                FollowMainCharacter();
+                assignedTargetCharacter = characterManager.GetMainPlayerCharacter().transform;
             }
 
             if (isControlledByPlayer) {return;}
 
-            movement.FollowTarget(followTarget);
+            if (targetState == TargetState.AssignedTargetCharacter) {
+                movement.FollowTarget(assignedTargetCharacter);
+
+            }
+            else {
+                movement.FollowTarget(followTarget);
+            }
         }
         void UpdateAIControlStatus() {
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
@@ -67,43 +77,62 @@ namespace coldheart_controls {
                 isAIControlStateUpdated = true;
             }
         }
-        void UpdateFollowTarget() {
-            if (targetState == TargetState.MainCharacter) {
-                GameObject mainCharacter = characterManager.GetMainPlayerCharacter();
-                followTarget = mainCharacter.transform;
-            }
-            else if (targetState == TargetState.CurrentCharacter) {
-                GameObject currentCharacter = characterManager.GetCurrentPlayerCharacter();
-                followTarget = currentCharacter.transform;
-            }
-            else if (targetState == TargetState.Self) {
-                GameObject self = gameObject;
-                followTarget = self.transform;
-            }
+        void FollowMainCharacter() {
+            targetState = TargetState.MainCharacter;
+            GameObject mainCharacter = characterManager.GetMainPlayerCharacter();
+            followTarget = mainCharacter.transform;
         }
         void FollowCurrentCharacter() {
             targetState = TargetState.CurrentCharacter;
-            UpdateFollowTarget();
+            GameObject currentCharacter = characterManager.GetCurrentPlayerCharacter();
+            followTarget = currentCharacter.transform;
+        }
+        void FollowAssignedTargetCharacter() {
+            GameObject currentPlayerCharacter = characterManager.GetCurrentPlayerCharacter();
+            if (this.gameObject == currentPlayerCharacter) {return;}
+
+            targetState = TargetState.AssignedTargetCharacter;
+            assignedTargetCharacter = currentPlayerCharacter.transform; // does not change until FollowMe() is called again
         }
         public void SwitchTargetState() {
-            if (targetState == TargetState.Self) {
-                SetTargetState(TargetState.MainCharacter);
-                print(gameObject.name + " is following main character!");
-            }
-            else if (targetState == TargetState.MainCharacter) {
+            if (targetState == TargetState.MainCharacter) {
                 SetTargetState(TargetState.CurrentCharacter);
+                FollowCurrentCharacter();
                 print(gameObject.name + " is following current character!");
             }
             else if (targetState == TargetState.CurrentCharacter) {
-                SetTargetState(TargetState.Self);
-                print(gameObject.name + " is following its guard location");
+                SetTargetState(TargetState.ThisCharacter);
+                followTarget = this.gameObject.transform;
+                print(gameObject.name + " is following no one!");
+            }            
+            else if (targetState == TargetState.ThisCharacter) {
+                SetTargetState(TargetState.MainCharacter);
+                FollowMainCharacter();
+                print(gameObject.name + " is following main character!");
+            }
+            else if (targetState == TargetState.AssignedTargetCharacter) {
+                SetTargetState(TargetState.MainCharacter);
+                FollowMainCharacter();
+                print(gameObject.name + " is following main character!");
+            } 
+        }
+        public void UpdateTargetState() {
+            if (targetState == TargetState.MainCharacter) {
+                FollowMainCharacter();
+            }
+            else if (targetState == TargetState.CurrentCharacter) {
+                FollowCurrentCharacter();
             }
         }
         // Visualize follow target connections
         void OnDrawGizmos() {
             if (followTarget == null) return;
+
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(transform.position, followTarget.position);
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(transform.position, assignedTargetCharacter.position);
         }
     }
 }

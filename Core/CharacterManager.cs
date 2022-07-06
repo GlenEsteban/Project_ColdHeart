@@ -11,7 +11,7 @@ namespace coldheart_core {
         [SerializeField] List<GameObject> playerCharacters;
         [SerializeField] List<GameObject> enemyCharacters;
         public event Action onSwitchCharacterAction;
-        public event Action onAllPlayerCharactersFollowCurrentPlayer;
+        public event Action onAllPlayerCharactersFollowTargetPlayer;
         public GameObject GetMainPlayerCharacter () {
             return mainPlayerCharacter;
         }
@@ -88,8 +88,8 @@ namespace coldheart_core {
             currentPlayerCharacter = playerCharacters[previousPlayerCharacterIndex];
             onSwitchCharacterAction();
         }
-        public void AllPlayerCharactersFollowCurrentPlayer() {
-            onAllPlayerCharactersFollowCurrentPlayer();
+        public void AllPlayerCharactersFollowTargetPlayer() {
+            onAllPlayerCharactersFollowTargetPlayer();
         }
     }
 }
