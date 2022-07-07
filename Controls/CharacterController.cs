@@ -131,7 +131,7 @@ namespace coldheart_controls {
             }
         }
         void OnFollowMe(InputValue value) {
-            characterManager.AllPlayerCharactersFollowTargetPlayer();
+            characterManager.AllPlayerCharactersFollowCurrentPlayer();
             isAbleToSwitchFollowTarget = false;
             print ("Everyone is following " + gameObject.name);
         }
