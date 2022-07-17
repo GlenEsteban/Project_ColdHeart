@@ -135,5 +135,11 @@ namespace coldheart_controls {
             isAbleToSwitchFollowTarget = false;
             print ("Everyone is following " + gameObject.name);
         }
+        void OnInstantAbility(InputValue value) {
+            combat.CallInstantAbility();
+        }
+        void OnChargedAbility(InputValue value) {
+            combat.CallChargedAbility();
+        }
     }
 }

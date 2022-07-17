@@ -21,7 +21,7 @@ namespace coldheart_controls {
         Movement movement;
         NavMeshAgent navMeshAgent;
         public TargetState targetState;
-        public Transform followTarget;
+        public GameObject followTarget;
         Combat combat;
         float timeSinceLastCheckForNearbyEnemies;
         GameObject attackTarget;
@@ -45,8 +45,7 @@ namespace coldheart_controls {
         }
         void Update()
         {
-            if (!isAIControlStateUpdated)
-            {
+            if (!isAIControlStateUpdated) {
                 UpdateAIControlStatus();
             }
 
@@ -85,27 +84,22 @@ namespace coldheart_controls {
             return null;
         }
         void FollowBehavior() {
-            if (targetState == TargetState.FollowTargetCharacter)
-            {
-                if (followTarget == null)
-                {
-                    followTarget = characterManager.GetMainPlayerCharacter().transform;
+            if (targetState == TargetState.FollowTargetCharacter) {
+                if (followTarget == null) {
+                    followTarget = characterManager.GetMainPlayerCharacter();
                 }
-                else
-                {
-                    movement.FollowTarget(followTarget);
+                else {
+                    movement.FollowTarget(followTarget.transform);
                 }
             }
-            else if (targetState == TargetState.FollowCurrentCharacter)
-            {
+            else if (targetState == TargetState.FollowCurrentCharacter) {
                 GameObject currentCharacter = characterManager.GetCurrentPlayerCharacter();
                 movement.FollowTarget(currentCharacter.transform);
             }
         }
         void AttackBehavior(GameObject enemyTarget) {
-            print("Attacking " + enemyTarget.name);
             movement.FollowTarget(enemyTarget.transform);
-            // If is in weapon range, face target and attack else resume pursuit.
+            combat.CallInstantAbility();
         }
         void UpdateAIControlStatus() {
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
@@ -126,7 +120,7 @@ namespace coldheart_controls {
         void UpdateTargetStateOnFollowMe() {
             targetState = TargetState.FollowTargetCharacter;
             GameObject currentCharacter = characterManager.GetCurrentPlayerCharacter();
-            followTarget = characterManager.GetCurrentPlayerCharacter().transform;
+            followTarget = characterManager.GetCurrentPlayerCharacter();
         }
         public void SwitchTargetState() {
             if (targetState == TargetState.FollowTargetCharacter) {
@@ -145,12 +139,16 @@ namespace coldheart_controls {
         void OnDrawGizmos() {
             if (followTarget == null) return;
             
-            if (targetState == TargetState.FollowTargetCharacter) {
+            if (attackTarget != null) {
+                Gizmos.color = Color.red;
+                Gizmos.DrawLine(transform.position, attackTarget.transform.position);
+            }
+            else if (targetState == TargetState.FollowTargetCharacter) {
                 Gizmos.color = Color.blue;
-                Gizmos.DrawLine(transform.position, followTarget.position);
+                Gizmos.DrawLine(transform.position, followTarget.transform.position);
             }
             else if (targetState == TargetState.FollowCurrentCharacter) {
-                Gizmos.color = Color.red;
+                Gizmos.color = Color.green;
                 GameObject currentCharacter = characterManager.GetCurrentPlayerCharacter();
                 Gizmos.DrawLine(transform.position, currentCharacter.transform.position);
             }
