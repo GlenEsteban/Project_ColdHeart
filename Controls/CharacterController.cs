@@ -21,7 +21,7 @@ namespace coldheart_controls {
         CharacterManager characterManager;
         GameObject mainPlayerCharacter;
         PlayerInput playerInput;
-        PlayerControls playerControls;
+        PlayerInputActions playerInputActions;
         FollowerAIController followerAIController;
         EnemyAIController enemyAIController;
         Movement movement;
@@ -37,11 +37,12 @@ namespace coldheart_controls {
         }
         void OnEnable() {
             RegisterCharacter();
-
             characterManager.onSwitchCharacterAction += UpdateControlStatus;
-            playerControls = new PlayerControls();
-            playerControls.Player.SwitchCharacter.performed += x => mouseScrollY = x.ReadValue<float>();
-            playerControls.Enable();
+            playerInputActions = new PlayerInputActions();
+            playerInputActions.Player.SwitchCharacter.performed += x => mouseScrollY = x.ReadValue<float>();
+            playerInputActions.Player.ChargeUpAbility.started += x => combat.SetIsChargingUpAbility(true);
+            playerInputActions.Player.ChargeUpAbility.canceled += x => combat.SetIsChargingUpAbility(false);
+            playerInputActions.Enable();
         }
         void OnDisable() {
             if (tag == "Player") {
@@ -52,8 +53,9 @@ namespace coldheart_controls {
             }
 
             characterManager.onSwitchCharacterAction -= UpdateControlStatus;
-
-            playerControls.Disable();
+            playerInputActions.Player.ChargeUpAbility.started -= x => combat.SetIsChargingUpAbility(true);
+            playerInputActions.Player.ChargeUpAbility.canceled -= x => combat.SetIsChargingUpAbility(false);
+            playerInputActions.Disable();
         }
         void Update() {
             if (!isControlStateUpdated) {
@@ -100,15 +102,20 @@ namespace coldheart_controls {
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
             if (isControlledByPlayer) {
                 playerInput.enabled = true;
+                playerInputActions.Enable();
             }
             else {
                 playerInput.enabled = false;
+                playerInputActions.Disable();
             }
             
             // For some reason GetCurrentPlayerCharacter() returns null at Start and on the 
             // ... first Update(), so here's a quick fix. 
             if (characterManager.GetCurrentPlayerCharacter() != null) {
                 isControlStateUpdated = true;
+            }
+            else {
+                print("updating control status");
             }
         }
         void OnMove(InputValue value) {
@@ -130,16 +137,19 @@ namespace coldheart_controls {
                 isAbleToSwitchFollowTarget = true;
             }
         }
-        void OnFollowMe(InputValue value) {
+        void OnFollowMe() {
             characterManager.AllPlayerCharactersFollowCurrentPlayer();
             isAbleToSwitchFollowTarget = false;
             print ("Everyone is following " + gameObject.name);
         }
-        void OnInstantAbility(InputValue value) {
+        void OnInstantAbility() {
             combat.CallInstantAbility();
         }
-        void OnChargedAbility(InputValue value) {
-            combat.CallChargedAbility();
-        }
+
+        // OnChargeUpAbility is handled via subscribing to its 
+        // input action events, Started and Canceled, and then updating a bool
+        // to toggle a timer. I know very janky...
+        // I think I somehow broke something in the input system. For some reason,
+        // input actions' methods can't accept parameters like the "InputAction value" on OnMove()
     }
 }

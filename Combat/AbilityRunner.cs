@@ -4,7 +4,7 @@ using UnityEngine;
 namespace coldheart_combat {
     public class AbilityRunner : MonoBehaviour {
         IAbility instantAbility;
-        IAbility chargedAbility;
+        IAbility chargeUpAbility;
         public void AssignAbility(IAbility abilityToAdd, abilityTypes abilityType) {
             if (abilityType == abilityTypes.NoAbility) {
                 print(gameObject.name + " has an ability with an undetermined type");
@@ -12,8 +12,8 @@ namespace coldheart_combat {
             if (abilityType == abilityTypes.InstantAbility) {
                 instantAbility = abilityToAdd;
             }
-            else if (abilityType == abilityTypes.ChargedAbility) {
-                chargedAbility = abilityToAdd;
+            else if (abilityType == abilityTypes.ChargeUpAbility) {
+                chargeUpAbility = abilityToAdd;
             }
         }
         public void UseInstantAbility() {
@@ -25,8 +25,8 @@ namespace coldheart_combat {
             }
         }
         public void UseChargedAbility() {
-            if (chargedAbility != null) {
-                chargedAbility.Use(gameObject);
+            if (chargeUpAbility != null) {
+                chargeUpAbility.Use(gameObject);
             }
             else {
                 print("This character does not have a charged ability");
@@ -39,6 +39,6 @@ namespace coldheart_combat {
     public enum abilityTypes {
         NoAbility,
         InstantAbility,
-        ChargedAbility
+        ChargeUpAbility
     }
 }
