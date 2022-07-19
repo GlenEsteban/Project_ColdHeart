@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using coldheart_core;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,19 +12,24 @@ namespace coldheart_movement {
         bool isAbleToMove = true;
         Rigidbody rb;
         NavMeshAgent navMeshAgent;
+        Health health;
         Vector3 playerVelocity;
         Ray screenPointRay;
         RaycastHit hit;
         GameObject objectHit;
-        public bool GetIsAbleToMove() {
-            return isAbleToMove;
-        }
-        public void SetIsAbleToMove(bool state) {
-            isAbleToMove = state;
-        }
-        void Start() {
+        void Awake() {
             rb = GetComponent<Rigidbody>();
             navMeshAgent = GetComponent<NavMeshAgent>();
+            health = GetComponent<Health>();
+        }
+        void OnEnable() {
+            health.onCharacterDeath += ImmobolizeCharacter;
+        }
+        void OnDisable() {
+            health.onCharacterDeath -= ImmobolizeCharacter;
+        }
+        public void ImmobolizeCharacter() {
+            isAbleToMove = false;
         }
         public void MoveCharacter(Vector2 moveInput) {
             if (!isAbleToMove) {return;}

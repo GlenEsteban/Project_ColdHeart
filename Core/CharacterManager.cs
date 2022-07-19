@@ -31,6 +31,7 @@ namespace coldheart_core {
             if (mainPlayerCharacter != null) {
                 currentPlayerCharacter = mainPlayerCharacter;
                 playerCharacters.Add(mainPlayerCharacter);
+                
             }
             else {
                 print("Main Player Character is not set in Character Manager!");
@@ -84,6 +85,11 @@ namespace coldheart_core {
                 previousPlayerCharacterIndex = currentPlayerCharacterIndex - 1;
             }
             currentPlayerCharacter = playerCharacters[previousPlayerCharacterIndex];
+            onSwitchCharacterAction();
+        }
+        public void SwitchToMainPlayerCharacter() {
+            int mainPlayerCharacterIndex = playerCharacters.IndexOf(mainPlayerCharacter);
+            currentPlayerCharacter = playerCharacters[mainPlayerCharacterIndex];
             onSwitchCharacterAction();
         }
         public void AllPlayerCharactersFollowCurrentPlayer() {
