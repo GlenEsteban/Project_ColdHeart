@@ -17,6 +17,7 @@ namespace coldheart_controls {
         bool isControlledByPlayer;
         bool isAIControlStateUpdated;
         CharacterManager characterManager;
+        Health health;
         GameObject currentCharacter;
         Movement movement;
         NavMeshAgent navMeshAgent;
@@ -27,6 +28,7 @@ namespace coldheart_controls {
         GameObject attackTarget;
         void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
+            health = GetComponent<Health>();
             movement = GetComponent<Movement>();
             navMeshAgent = GetComponent<NavMeshAgent>();
             combat = GetComponent<Combat>();
@@ -38,10 +40,9 @@ namespace coldheart_controls {
             characterManager.onAllPlayerCharactersFollowCurrentPlayer += UpdateTargetStateOnFollowMe;
         }
         void OnDisable() {
-            if (characterManager.CheckIfCharacterIsAPlayerCharacter(gameObject)) {
-                characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
-                characterManager.onAllPlayerCharactersFollowCurrentPlayer -= UpdateTargetStateOnFollowMe;
-            }
+            characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
+            characterManager.onAllPlayerCharactersFollowCurrentPlayer -= UpdateTargetStateOnFollowMe;
+
         }
         void Update()
         {
@@ -54,7 +55,6 @@ namespace coldheart_controls {
             timeSinceLastCheckForNearbyEnemies += Time.deltaTime;
             if (timeSinceLastCheckForNearbyEnemies > 1f) {
                 attackTarget = CheckForNearbyEnemies();
-                print("Checking for enemies...");
                 timeSinceLastCheckForNearbyEnemies = 0;
             }
 
@@ -102,6 +102,9 @@ namespace coldheart_controls {
             combat.CallInstantAbility();
         }
         void UpdateAIControlStatus() {
+            bool isDead = (health.GetCurrentHealth() <=0);
+            if (isDead) {return;}
+            
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
             if (isControlledByPlayer) {
                 navMeshAgent.enabled = false;

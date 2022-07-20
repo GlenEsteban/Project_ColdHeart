@@ -21,15 +21,15 @@ namespace coldheart_combat {
                 instantAbility.Use(gameObject);
             }
             else {
-                print("This character does not have a instant ability");
+                print(gameObject.name + " does not have a instant ability");
             }
         }
-        public void UseChargedAbility() {
+        public void UseChargeUpAbility() {
             if (chargeUpAbility != null) {
                 chargeUpAbility.Use(gameObject);
             }
             else {
-                print("This character does not have a charged ability");
+                print(gameObject.name + " does not have a charge up ability");
             }
         }
     }

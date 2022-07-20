@@ -35,7 +35,7 @@ namespace coldheart_combat {
             if(isChargingUpAbility) {
                 timerForChargedAbilityChargeUpTime += Time.deltaTime;
                 if (timerForChargedAbilityChargeUpTime > chargeUpAbilityChargeTime) {
-                    abilityRunner.UseChargedAbility();
+                    abilityRunner.UseChargeUpAbility();
                     timerForChargedAbilityChargeUpTime = 0;
                 }
             }

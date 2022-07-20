@@ -25,8 +25,8 @@ namespace coldheart_core {
             ResetHealth();
 
             while (true) {
-                yield return new WaitForSeconds(1f);
-                ReduceHealth(3f);
+                yield return new WaitForSeconds(3f);
+                ReduceHealth(10f);
             }
         }
         void Update() {
@@ -63,36 +63,37 @@ namespace coldheart_core {
                 }
             }
         }
-        void HandleCharacterDeathEvent() {
+        void HandleCharacterDeathEvent()
+        {
+            print(gameObject.name + " died...");
             onCharacterDeath();
-            
+
             GameObject mainPlayerCharacter = characterManager.GetMainPlayerCharacter();
             GameObject currentPlayerCharacter = characterManager.GetCurrentPlayerCharacter();
-            if (mainPlayerCharacter == gameObject && currentPlayerCharacter == gameObject) {
-                print(gameObject.name + mainPlayerCharacter.name + currentPlayerCharacter.name + " Game Over");
-            }
-            else if (mainPlayerCharacter == gameObject && !currentPlayerCharacter == gameObject) {
+            if (mainPlayerCharacter == gameObject) {
                 characterManager.SwitchToMainPlayerCharacter();
             }
-            else if (!mainPlayerCharacter == gameObject && currentPlayerCharacter == gameObject) {
-                StartCoroutine("SwitchAfterDeathEventTime");
-            }
-            else {
-                print("One of your followers died.");
+            else if (mainPlayerCharacter != gameObject && currentPlayerCharacter == gameObject) {
+                StartCoroutine("DelaySwitchToMainPlayerCharacter");
             }
 
+            if (characterManager.GetMainPlayerCharacter() != gameObject) {
+                Destroy(gameObject, deathEventTime + 1f);
+            }
+        }
+        IEnumerator DelaySwitchToMainPlayerCharacter() {
+            yield return new WaitForSeconds(deathEventTime);
+            characterManager.SwitchToMainPlayerCharacter();
+            UnregisterCharacter();
+            gameObject.SetActive(false);
+        }
+        void UnregisterCharacter() {
             if (tag == "Player") {
                 characterManager.UnregisterPlayerCharacter(gameObject);
             }
             else if (tag == "Enemy") {
                 characterManager.UnregisterEnemyCharacter(gameObject);
             }
-
-            Destroy(gameObject, deathEventTime);
-        }
-        IEnumerator SwitchAfterDeathEventTime() {
-            yield return new WaitForSeconds(deathEventTime);
-            characterManager.SwitchToMainPlayerCharacter();
         }
     }
 }

@@ -13,8 +13,8 @@ namespace coldheart_cinematics {
             characterManager = FindObjectOfType<CharacterManager>();
             cinemachineVirtualCamera = GetComponent<CinemachineVirtualCamera>();
         }
-        void OnEnable() {
-            characterManager.onSwitchCharacterAction += UpdateFollowTarget;
+        void Update() {
+            UpdateFollowTarget();
         }
         void UpdateFollowTarget() {
             cinemachineVirtualCamera.m_Follow = characterManager.GetCurrentPlayerCharacter().transform;

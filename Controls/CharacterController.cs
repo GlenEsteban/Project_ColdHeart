@@ -58,10 +58,7 @@ namespace coldheart_controls {
             playerInputActions.Disable();
         }
         void Update() {
-            if (!isControlStateUpdated) {
-                UpdateControlStatus();
-            }
-            
+            UpdateControlStatus();
             if (isControlledByPlayer) {
                 movement.MoveCharacter(moveInput);
                 movement.LookAtCursor();
@@ -82,7 +79,16 @@ namespace coldheart_controls {
             }
         }
         void UpdateControlStatus() {
-            mainPlayerCharacter = characterManager.GetMainPlayerCharacter();
+            isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
+            if (isControlledByPlayer) {
+                playerInput.enabled = true;
+                playerInputActions.Enable();
+            }
+            else {
+                playerInput.enabled = false;
+                playerInputActions.Disable();
+            }
+            
             if (tag == "Player") {
                 GetComponent<CharacterController>().enabled = true;
                 enemyAIController.enabled = false;
@@ -97,25 +103,6 @@ namespace coldheart_controls {
                 GetComponent<CharacterController>().enabled = false;
                 followerAIController.enabled = false;
                 enemyAIController.enabled = false;
-            }
-
-            isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
-            if (isControlledByPlayer) {
-                playerInput.enabled = true;
-                playerInputActions.Enable();
-            }
-            else {
-                playerInput.enabled = false;
-                playerInputActions.Disable();
-            }
-            
-            // For some reason GetCurrentPlayerCharacter() returns null at Start and on the 
-            // ... first Update(), so here's a quick fix. 
-            if (characterManager.GetCurrentPlayerCharacter() != null) {
-                isControlStateUpdated = true;
-            }
-            else {
-                print("updating control status");
             }
         }
         void OnMove(InputValue value) {
