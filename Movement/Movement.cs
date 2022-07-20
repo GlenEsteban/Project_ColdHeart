@@ -1,22 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using coldheart_core;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace coldheart_movement {
+namespace coldheart_movement
+{
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(NavMeshAgent))]
     public class Movement : MonoBehaviour {
         [SerializeField] float moveSpeed = 10f;
-        bool isAbleToMove = true;
+        public void SetIsAbleToMove(bool state) {
+            isAbleToMove = state;
+        }
+        Health health;
         Rigidbody rb;
         NavMeshAgent navMeshAgent;
-        Health health;
         Vector3 playerVelocity;
         Ray screenPointRay;
         RaycastHit hit;
         GameObject objectHit;
+        bool isAbleToMove = true;
         void Awake() {
             rb = GetComponent<Rigidbody>();
             navMeshAgent = GetComponent<NavMeshAgent>();
@@ -29,7 +31,7 @@ namespace coldheart_movement {
             health.onCharacterDeath -= ImmobolizeCharacter;
         }
         public void ImmobolizeCharacter() {
-            isAbleToMove = false;
+            SetIsAbleToMove(false);
         }
         public void MoveCharacter(Vector2 moveInput) {
             if (!isAbleToMove) {return;}

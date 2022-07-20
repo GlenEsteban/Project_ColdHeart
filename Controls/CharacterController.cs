@@ -1,12 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using coldheart_core;
 using coldheart_movement;
 using coldheart_combat;
 
-namespace coldheart_controls {
+namespace coldheart_controls
+{
     [RequireComponent(typeof(PlayerInput))]
     [RequireComponent(typeof(Movement))]
     [RequireComponent(typeof(Combat))]
@@ -15,11 +14,9 @@ namespace coldheart_controls {
     public class CharacterController : MonoBehaviour
     {
         bool isControlledByPlayer;
-        bool isControlStateUpdated;
         bool isAbleToSwitchFollowTarget = true;
         [HideInInspector] public float mouseScrollY;
         CharacterManager characterManager;
-        GameObject mainPlayerCharacter;
         PlayerInput playerInput;
         PlayerInputActions playerInputActions;
         FollowerAIController followerAIController;
@@ -37,24 +34,23 @@ namespace coldheart_controls {
         }
         void OnEnable() {
             RegisterCharacter();
+
             characterManager.onSwitchCharacterAction += UpdateControlStatus;
             playerInputActions = new PlayerInputActions();
             playerInputActions.Player.SwitchCharacter.performed += x => mouseScrollY = x.ReadValue<float>();
             playerInputActions.Player.ChargeUpAbility.started += x => combat.SetIsChargingUpAbility(true);
             playerInputActions.Player.ChargeUpAbility.canceled += x => combat.SetIsChargingUpAbility(false);
+
             playerInputActions.Enable();
         }
         void OnDisable() {
-            if (tag == "Player") {
-                characterManager.UnregisterPlayerCharacter(gameObject);
-            }
-            else if (tag == "Enemy") {
-                characterManager.UnregisterEnemyCharacter(gameObject);
-            }
+            UnregisterCharacter();
 
             characterManager.onSwitchCharacterAction -= UpdateControlStatus;
+            playerInputActions.Player.SwitchCharacter.performed -= x => mouseScrollY = x.ReadValue<float>();
             playerInputActions.Player.ChargeUpAbility.started -= x => combat.SetIsChargingUpAbility(true);
             playerInputActions.Player.ChargeUpAbility.canceled -= x => combat.SetIsChargingUpAbility(false);
+            
             playerInputActions.Disable();
         }
         void Update() {
@@ -78,6 +74,14 @@ namespace coldheart_controls {
                 print("Character is untagged!!!");
             }
         }
+        void UnregisterCharacter() {
+            if (tag == "Player") {
+                characterManager.UnregisterPlayerCharacter(gameObject);
+            }
+            else if (tag == "Enemy") {
+                characterManager.UnregisterEnemyCharacter(gameObject);
+            }
+        }
         void UpdateControlStatus() {
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
             if (isControlledByPlayer) {
@@ -89,20 +93,20 @@ namespace coldheart_controls {
                 playerInputActions.Disable();
             }
             
-            if (tag == "Player") {
-                GetComponent<CharacterController>().enabled = true;
+            if (tag == "Player" ) {
                 enemyAIController.enabled = false;
                 followerAIController.enabled = true;
+                this.enabled = true;
             }
             else if (tag == "Enemy") {
-                GetComponent<CharacterController>().enabled = false;
                 followerAIController.enabled = false;
                 enemyAIController.enabled = true;
+                this.enabled = false;
             }
             else {
-                GetComponent<CharacterController>().enabled = false;
                 followerAIController.enabled = false;
                 enemyAIController.enabled = false;
+                this.enabled = false;
             }
         }
         void OnMove(InputValue value) {
@@ -130,13 +134,11 @@ namespace coldheart_controls {
             print ("Everyone is following " + gameObject.name);
         }
         void OnInstantAbility() {
-            combat.CallInstantAbility();
+            combat.CallThrottledInstantAbility();
         }
 
         // OnChargeUpAbility is handled via subscribing to its 
         // input action events, Started and Canceled, and then updating a bool
-        // to toggle a timer. I know very janky...
-        // I think I somehow broke something in the input system. For some reason,
-        // input actions' methods can't accept parameters like the "InputAction value" on OnMove()
+        // to toggle a timer.
     }
 }

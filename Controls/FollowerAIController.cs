@@ -1,34 +1,25 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 using coldheart_core;
 using coldheart_movement;
-using System;
 using coldheart_combat;
 
-namespace coldheart_controls {
-    public enum TargetState {
-        FollowTargetCharacter,
-        FollowCurrentCharacter,
-        FollowNoOne
-    }
+namespace coldheart_controls
+{
     public class FollowerAIController : MonoBehaviour {
+        CharacterManager characterManager;
+        Movement movement;
+        Combat combat;
+        NavMeshAgent navMeshAgent;
+        TargetState targetState;
+        GameObject followTarget;
+        GameObject attackTarget;
         bool isControlledByPlayer;
         bool isAIControlStateUpdated;
-        CharacterManager characterManager;
-        Health health;
-        GameObject currentCharacter;
-        Movement movement;
-        NavMeshAgent navMeshAgent;
-        public TargetState targetState;
-        public GameObject followTarget;
-        Combat combat;
         float timeSinceLastCheckForNearbyEnemies;
-        GameObject attackTarget;
         void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
-            health = GetComponent<Health>();
             movement = GetComponent<Movement>();
             navMeshAgent = GetComponent<NavMeshAgent>();
             combat = GetComponent<Combat>();
@@ -37,15 +28,14 @@ namespace coldheart_controls {
             targetState = TargetState.FollowTargetCharacter;
 
             characterManager.onSwitchCharacterAction += UpdateAIControlStatus;
-            characterManager.onAllPlayerCharactersFollowCurrentPlayer += UpdateTargetStateOnFollowMe;
+            characterManager.onFollowMeAction += UpdateTargetStateOnFollowMe;
         }
         void OnDisable() {
             characterManager.onSwitchCharacterAction -= UpdateAIControlStatus;
-            characterManager.onAllPlayerCharactersFollowCurrentPlayer -= UpdateTargetStateOnFollowMe;
-
+            characterManager.onFollowMeAction -= UpdateTargetStateOnFollowMe;
         }
         void Update()
-        {
+        { 
             if (!isAIControlStateUpdated) {
                 UpdateAIControlStatus();
             }
@@ -64,7 +54,6 @@ namespace coldheart_controls {
             else {
                 AttackBehavior(attackTarget);
             }
-
         }
         GameObject CheckForNearbyEnemies() {
             List<GameObject> enemies = characterManager.GetEnemyCharacters();
@@ -99,12 +88,9 @@ namespace coldheart_controls {
         }
         void AttackBehavior(GameObject enemyTarget) {
             movement.FollowTarget(enemyTarget.transform);
-            combat.CallInstantAbility();
+            combat.CallThrottledInstantAbility();
         }
         void UpdateAIControlStatus() {
-            bool isDead = (health.GetCurrentHealth() <=0);
-            if (isDead) {return;}
-            
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;
             if (isControlledByPlayer) {
                 navMeshAgent.enabled = false;
@@ -122,7 +108,6 @@ namespace coldheart_controls {
         }
         void UpdateTargetStateOnFollowMe() {
             targetState = TargetState.FollowTargetCharacter;
-            GameObject currentCharacter = characterManager.GetCurrentPlayerCharacter();
             followTarget = characterManager.GetCurrentPlayerCharacter();
         }
         public void SwitchTargetState() {
@@ -156,5 +141,10 @@ namespace coldheart_controls {
                 Gizmos.DrawLine(transform.position, currentCharacter.transform.position);
             }
         }
+    }
+    public enum TargetState {
+        FollowTargetCharacter,
+        FollowCurrentCharacter,
+        FollowNoOne
     }
 }

@@ -1,17 +1,16 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
-namespace coldheart_core {
+namespace coldheart_core
+{
     public class CharacterManager : MonoBehaviour {
         [SerializeField] GameObject mainPlayerCharacter;
         [SerializeField] GameObject currentPlayerCharacter;
         [SerializeField] List<GameObject> playerCharacters;
         [SerializeField] List<GameObject> enemyCharacters;
         public event Action onSwitchCharacterAction;
-        public event Action onAllPlayerCharactersFollowCurrentPlayer;
+        public event Action onFollowMeAction;
         public GameObject GetMainPlayerCharacter () {
             return mainPlayerCharacter;
         }
@@ -25,13 +24,12 @@ namespace coldheart_core {
             return playerCharacters.Contains(character);
         }
         void Start() {
-            SetCurrentPlayerCharacter();
+            AssignCurrentPlayerCharacter();
         }
-        void SetCurrentPlayerCharacter() {
+        void AssignCurrentPlayerCharacter() {
             if (mainPlayerCharacter != null) {
                 currentPlayerCharacter = mainPlayerCharacter;
-                playerCharacters.Add(mainPlayerCharacter);
-                
+                playerCharacters.Add(mainPlayerCharacter);  
             }
             else {
                 print("Main Player Character is not set in Character Manager!");
@@ -72,7 +70,13 @@ namespace coldheart_core {
             else {
                 nextPlayerCharacterIndex = currentPlayerCharacterIndex + 1;
             }
-            currentPlayerCharacter = playerCharacters[nextPlayerCharacterIndex];
+            if (nextPlayerCharacterIndex <= 0 || nextPlayerCharacterIndex > playerCharacters.Count) {
+                currentPlayerCharacter = playerCharacters[0];
+            }
+            else {
+                currentPlayerCharacter = playerCharacters[nextPlayerCharacterIndex];
+            }
+
             onSwitchCharacterAction();
         }
         public void SwitchToPreviousCharacter() {
@@ -84,16 +88,28 @@ namespace coldheart_core {
             else {
                 previousPlayerCharacterIndex = currentPlayerCharacterIndex - 1;
             }
-            currentPlayerCharacter = playerCharacters[previousPlayerCharacterIndex];
+            if (previousPlayerCharacterIndex <= 0 || previousPlayerCharacterIndex > playerCharacters.Count) {
+                currentPlayerCharacter = playerCharacters[0];
+            }
+            else {
+                currentPlayerCharacter = playerCharacters[previousPlayerCharacterIndex];
+            }
+
             onSwitchCharacterAction();
         }
         public void SwitchToMainPlayerCharacter() {
             int mainPlayerCharacterIndex = playerCharacters.IndexOf(mainPlayerCharacter);
-            currentPlayerCharacter = playerCharacters[mainPlayerCharacterIndex];
+            if (mainPlayerCharacterIndex < 0 || mainPlayerCharacterIndex >= playerCharacters.Count) {
+                currentPlayerCharacter = playerCharacters[0];
+            }
+            else {
+                currentPlayerCharacter = playerCharacters[mainPlayerCharacterIndex];
+            }
+
             onSwitchCharacterAction();
         }
         public void AllPlayerCharactersFollowCurrentPlayer() {
-            onAllPlayerCharactersFollowCurrentPlayer();
+            onFollowMeAction();
         }
     }
 }

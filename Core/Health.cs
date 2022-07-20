@@ -1,23 +1,22 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
-namespace coldheart_core {
+namespace coldheart_core
+{
     public class Health : MonoBehaviour
     {
         [SerializeField] float maxHealth;
         [SerializeField] float currentHealth;
         [SerializeField] float invincibilityTime;
-        [SerializeField] bool isInvincible;
         [SerializeField] float deathEventTime = 2f;
-        CharacterManager characterManager;
-        float timerForInvincibility;
-        public event Action onCharacterDeath;
         public float GetCurrentHealth() {
             return currentHealth;
         }
+        public event Action onCharacterDeath;
+        CharacterManager characterManager;
+        float timerForInvincibility;
+        bool isInvincible;
         void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
         }
@@ -32,13 +31,14 @@ namespace coldheart_core {
         void Update() {
             ControlInvinciblity();
         }
-        void ResetHealth() {
+        public void ResetHealth() {
             currentHealth = maxHealth;
         }
         public void ReduceHealth(float damageDealt) {
-            if (isInvincible) {return;}
+            bool isDead = currentHealth <= 0;
+            if (isInvincible || isDead) {return;}
 
-            currentHealth = Mathf.Max(currentHealth -damageDealt, 0);
+            currentHealth = Mathf.Max(currentHealth - damageDealt, 0);
             if (currentHealth == 0) {
                 if (onCharacterDeath != null) {
                     HandleCharacterDeathEvent();
@@ -48,6 +48,9 @@ namespace coldheart_core {
             GainInvincibility(invincibilityTime);
         }
         public void RestoreHealth(float healAmount) {
+            bool isDead = currentHealth <= 0;
+            if (isDead) {return;}
+            
             currentHealth = Mathf.Min(currentHealth + healAmount, maxHealth);
         }
         public void GainInvincibility(float time) {
@@ -65,27 +68,27 @@ namespace coldheart_core {
         }
         void HandleCharacterDeathEvent()
         {
-            print(gameObject.name + " died...");
             onCharacterDeath();
 
-            GameObject mainPlayerCharacter = characterManager.GetMainPlayerCharacter();
-            GameObject currentPlayerCharacter = characterManager.GetCurrentPlayerCharacter();
-            if (mainPlayerCharacter == gameObject) {
-                characterManager.SwitchToMainPlayerCharacter();
-            }
-            else if (mainPlayerCharacter != gameObject && currentPlayerCharacter == gameObject) {
-                StartCoroutine("DelaySwitchToMainPlayerCharacter");
+            if (tag == "Player") {
+                GameObject mainPlayerCharacter = characterManager.GetMainPlayerCharacter();
+                GameObject currentPlayerCharacter = characterManager.GetCurrentPlayerCharacter();
+                if (mainPlayerCharacter == gameObject) {
+                    characterManager.SwitchToMainPlayerCharacter();
+                }
+                else if (mainPlayerCharacter != gameObject && currentPlayerCharacter == gameObject) {
+                    StartCoroutine("DelaySwitchToMainPlayerCharacter");
+                }
             }
 
             if (characterManager.GetMainPlayerCharacter() != gameObject) {
                 Destroy(gameObject, deathEventTime + 1f);
-            }
+            } 
         }
         IEnumerator DelaySwitchToMainPlayerCharacter() {
             yield return new WaitForSeconds(deathEventTime);
             characterManager.SwitchToMainPlayerCharacter();
             UnregisterCharacter();
-            gameObject.SetActive(false);
         }
         void UnregisterCharacter() {
             if (tag == "Player") {

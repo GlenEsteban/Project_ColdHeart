@@ -1,7 +1,7 @@
-using System;
 using UnityEngine;
 
-namespace coldheart_combat {
+namespace coldheart_combat
+{
     public class AbilityRunner : MonoBehaviour {
         IAbility instantAbility;
         IAbility chargeUpAbility;

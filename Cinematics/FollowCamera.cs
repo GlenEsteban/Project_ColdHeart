@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using Cinemachine;
 using coldheart_core;
 using UnityEngine;
 
-namespace coldheart_cinematics {
+namespace coldheart_cinematics
+{
     public class FollowCamera : MonoBehaviour
     {
         CharacterManager characterManager;

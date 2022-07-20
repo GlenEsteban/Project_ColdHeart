@@ -1,29 +1,26 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Interactions;
 
-namespace coldheart_combat {
+namespace coldheart_combat
+{
     [RequireComponent(typeof(AbilityRunner))]
     public class Combat : MonoBehaviour {
         [SerializeField] [Range (.02f, 10f)] float instantAbilityCoolDown;
         [SerializeField] [Range (.02f, 10f)] float chargeUpAbilityChargeTime;
-        float timeSinceLastInstantAbility = Mathf.Infinity;
-        bool isChargingUpAbility;
-        float timerForChargedAbilityChargeUpTime;
-        AbilityRunner abilityRunner;
         public void SetIsChargingUpAbility(bool state) {
             isChargingUpAbility = state;
         } 
+        AbilityRunner abilityRunner;
+        float timeSinceLastInstantAbility = Mathf.Infinity;
+        bool isChargingUpAbility;
+        float timerForChargeUpAbilityChargeUpTime;
         void Awake() {
             abilityRunner = GetComponent<AbilityRunner>();
         }
         void Update() {
             timeSinceLastInstantAbility += Time.deltaTime;
             
-            ControlChargedUpAbility();
+            ControlChargeUpAbility();
         }
         public void CallThrottledInstantAbility() {
             if (timeSinceLastInstantAbility >= instantAbilityCoolDown) {
@@ -31,21 +28,17 @@ namespace coldheart_combat {
                 timeSinceLastInstantAbility = 0;
             }
         }
-        public void ControlChargedUpAbility() {
+        public void ControlChargeUpAbility() {
             if(isChargingUpAbility) {
-                timerForChargedAbilityChargeUpTime += Time.deltaTime;
-                if (timerForChargedAbilityChargeUpTime > chargeUpAbilityChargeTime) {
+                timerForChargeUpAbilityChargeUpTime += Time.deltaTime;
+                if (timerForChargeUpAbilityChargeUpTime > chargeUpAbilityChargeTime) {
                     abilityRunner.UseChargeUpAbility();
-                    timerForChargedAbilityChargeUpTime = 0;
+                    timerForChargeUpAbilityChargeUpTime = 0;
                 }
             }
             else {
-                timerForChargedAbilityChargeUpTime = 0;
+                timerForChargeUpAbilityChargeUpTime = 0;
             }
-        }
-        public void CallInstantAbility() {
-            // if time since last used ability is greater than ability hold time, use ability.
-            abilityRunner.UseInstantAbility();
         }
     }
 }
