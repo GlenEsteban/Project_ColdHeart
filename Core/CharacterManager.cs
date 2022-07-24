@@ -56,7 +56,7 @@ namespace coldheart_core
             enemyCharacters.Add(enemyCharacter);
         }
         public void UnregisterEnemyCharacter(GameObject enemyCharacter) {
-            bool isAnEnemyCharacter = playerCharacters.Contains(enemyCharacter);
+            bool isAnEnemyCharacter = enemyCharacters.Contains(enemyCharacter);
             if (isAnEnemyCharacter) {
                 playerCharacters.Remove(enemyCharacter);
             }

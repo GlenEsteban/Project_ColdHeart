@@ -8,6 +8,7 @@ using coldheart_combat;
 namespace coldheart_controls
 {
     public class FollowerAIController : MonoBehaviour {
+        [SerializeField] float suspicionTime = 2f;
         CharacterManager characterManager;
         Movement movement;
         Combat combat;
@@ -18,6 +19,8 @@ namespace coldheart_controls
         bool isControlledByPlayer;
         bool isAIControlStateUpdated;
         float timeSinceLastCheckForNearbyEnemies;
+        float timeUnderSuspicion;
+        bool isAttacking;
         void Awake() {
             characterManager = FindObjectOfType<CharacterManager>();
             movement = GetComponent<Movement>();
@@ -50,16 +53,29 @@ namespace coldheart_controls
 
             if (attackTarget == null) {
                 FollowBehavior();
+                timeUnderSuspicion = 0;
+                isAttacking = false;
             }
-            else {
+            else if (!isAttacking) {
+                transform.LookAt(attackTarget.transform);
+                timeUnderSuspicion+= Time.deltaTime;
+                if (timeUnderSuspicion >= suspicionTime) {
+                    isAttacking = true;
+                }
+            }
+            else if (isAttacking) {
                 AttackBehavior(attackTarget);
             }
         }
         GameObject CheckForNearbyEnemies() {
             List<GameObject> enemies = characterManager.GetEnemyCharacters();
+            if (enemies.Count == 0) {return null;}
             float chaseRange = 10f;
             bool isInRange;
             foreach (GameObject enemy in enemies) {
+                if (enemy == null) {
+                    return null;
+                }
                 Vector3 pointA = enemy.transform.position;
                 Vector3 pointB = this.gameObject.transform.position;
                 isInRange = (pointA - pointB).sqrMagnitude < (chaseRange * chaseRange);
@@ -88,7 +104,8 @@ namespace coldheart_controls
         }
         void AttackBehavior(GameObject enemyTarget) {
             movement.FollowTarget(enemyTarget.transform);
-            combat.CallThrottledInstantAbility();
+            transform.LookAt(enemyTarget.transform);
+            combat.DecideAttackTypeBasedOnRatio();
         }
         void UpdateAIControlStatus() {
             isControlledByPlayer = characterManager.GetCurrentPlayerCharacter() == gameObject;

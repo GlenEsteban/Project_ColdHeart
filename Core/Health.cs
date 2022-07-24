@@ -78,17 +78,16 @@ namespace coldheart_core
                 }
                 else if (mainPlayerCharacter != gameObject && currentPlayerCharacter == gameObject) {
                     StartCoroutine("DelaySwitchToMainPlayerCharacter");
+                    UnregisterCharacter();
                 }
+            }
+            else if (tag == "Enemy") {
+                UnregisterCharacter();
             }
 
             if (characterManager.GetMainPlayerCharacter() != gameObject) {
                 Destroy(gameObject, deathEventTime + 1f);
             } 
-        }
-        IEnumerator DelaySwitchToMainPlayerCharacter() {
-            yield return new WaitForSeconds(deathEventTime);
-            characterManager.SwitchToMainPlayerCharacter();
-            UnregisterCharacter();
         }
         void UnregisterCharacter() {
             if (tag == "Player") {
@@ -97,6 +96,10 @@ namespace coldheart_core
             else if (tag == "Enemy") {
                 characterManager.UnregisterEnemyCharacter(gameObject);
             }
+        }
+        IEnumerator DelaySwitchToMainPlayerCharacter() {
+            yield return new WaitForSeconds(deathEventTime);
+            characterManager.SwitchToMainPlayerCharacter();
         }
     }
 }

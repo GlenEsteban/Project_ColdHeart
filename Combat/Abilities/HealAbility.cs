@@ -14,7 +14,6 @@ namespace coldheart_combat
         }
         public void Use(GameObject currentGameObject) {
             health.RestoreHealth(healAmount);
-            print(gameObject.name + " healed " + healAmount + " health points");
         }
     }
 }
